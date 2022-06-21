@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+
+[Unit]
+Description = Theia App
+After = network-online.target
+Wants = network-online.target
+
+[Service]
+Type = simple
+ExecStart = node /opt/theia-app/src-gen/backend/main.js /opt/theia-app/ --hostname=0.0.0.0 --plugins=local-dir:plugins 
+
+[Install]
+WantedBy = multi-user.target
+

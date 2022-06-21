@@ -1,0 +1,48 @@
+---
+header:
+  # See documentation
+  # https://kas.readthedocs.io/en/latest/format-changelog.html
+  version: 11
+machine: qemux86-64
+distro: poky
+target: core-image-minimal
+repos:
+
+  this:
+    layers:
+      meta-theia:
+
+  poky:
+    url: "https://git.yoctoproject.org/git/poky"
+    refspec: "kirkstone"
+    layers:
+      meta:
+      meta-poky:
+      meta-yocto-bsp:
+
+  meta-openembedded:
+    url: "https://github.com/openembedded/meta-openembedded"
+    refspec: "kirkstone"
+    layers:
+      meta-filesystems:
+      meta-networking:
+      meta-oe:
+      meta-python:
+
+local_conf_header:
+  custom: |
+    EXTRA_IMAGE_FEATURES = "debug-tweaks ssh-server-openssh"
+    PACKAGE_CLASSES = "package_ipk"
+    IMAGE_INSTALL:append = " theia-app"
+
+    # use systemd
+    DISTRO_FEATURES:remove = " sysvinit"
+    DISTRO_FEATURES:append = " systemd"
+    INIT_MANAGER = "systemd"
+    VIRTUAL-RUNTIME:init_manager = "systemd"
+
+    # try to use the offical Yocto sstate cache
+    BB_HASHSERVE_UPSTREAM = "typhoon.yocto.io:8687"
+    SSTATE_MIRRORS = "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
+    BB_HASHSERVE = "auto"
+    BB_SIGNATURE_HANDLER = "OEEquivHash"
