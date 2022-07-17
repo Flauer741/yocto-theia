@@ -4,15 +4,33 @@
 LICENSE = "CLOSED"
 
 inherit systemd
-# TODO: run dependeny parsing in do_fetch
-require theia_deps.inc
-require plugins.inc
+
+#require plugins.inc
 
 SRC_URI += " \
     file://yarn.lock;subdir=yarn \
     file://package.json;subdir=yarn \
     file://theia-app.service \
 "
+
+YARNLOCK = "${THISDIR}/${PN}/yarn.lock"
+
+python () {
+    import re
+    import base64
+
+    ylock_re = re.compile(r'^"?(?P<name>@?[^ #\n][^@]*).*:\n  version "(?P<version>[^"]+)"\n  resolved "(?P<url>[^"]+)"\n  integrity (?P<algo>[^-]+)-(?P<hash>.*)$', re.MULTILINE)
+
+    with open(d.getVar('YARNLOCK'), 'r') as yarn:
+        for m in ylock_re.finditer(yarn.read()):
+            fullname = m.group("name").replace("/", "-") + "-" + m.group("version")
+            fullname_noat = fullname.replace("@", "at-")
+            hashalgo = m.group("algo") + "sum"
+            hashsum = base64.b64decode(m.group("hash")).hex()
+
+            d.appendVar("SRC_URI", f' {m.group("url")};name={fullname_noat};downloadfilename={fullname}.tgz;subdir=offline_packages;unpack=0')
+            d.setVarFlag("SRC_URI", f'{fullname_noat}.{hashalgo}', hashsum)
+}
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 DEPENDS = "yarn-native pkgconfig-native libsecret"
