@@ -14,7 +14,7 @@ repos:
 
   poky:
     url: "https://git.yoctoproject.org/git/poky"
-    refspec: "kirkstone"
+    refspec: "dunfell"
     layers:
       meta:
       meta-poky:
@@ -22,7 +22,7 @@ repos:
 
   meta-openembedded:
     url: "https://github.com/openembedded/meta-openembedded"
-    refspec: "kirkstone"
+    refspec: "dunfell"
     layers:
       meta-filesystems:
       meta-networking:

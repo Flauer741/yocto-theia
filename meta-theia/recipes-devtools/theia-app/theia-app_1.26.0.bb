@@ -15,7 +15,7 @@ SRC_URI += " \
 "
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
-DEPENDS = "yarn-native pkgconfig-native libsecret"
+DEPENDS = "yarn-native pkgconfig-native nodejs-native libsecret"
 RDEPENDS:${PN} = "nodejs bash libstdc++ glibc libsecret glib-2.0 libgcc"
 
 S = "${WORKDIR}/yarn"
