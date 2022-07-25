@@ -1,4 +1,6 @@
 {
+    "name": "theia-app",
+    "version": "1.26.0",
     "private": true,
     "theia": {
         "frontend": {

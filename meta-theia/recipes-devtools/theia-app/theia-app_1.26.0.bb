@@ -15,40 +15,25 @@ SRC_URI += " \
 
 YARNLOCK = "${THISDIR}/${PN}/yarn.lock"
 
-python () {
-    import re
-    import base64
-
-    ylock_re = re.compile(r'^"?(?P<name>@?[^ #\n][^@]*).*:\n  version "(?P<version>[^"]+)"\n  resolved "(?P<url>[^"]+)"\n  integrity (?P<algo>[^-]+)-(?P<hash>.*)$', re.MULTILINE)
-
-    with open(d.getVar('YARNLOCK'), 'r') as yarn:
-        for m in ylock_re.finditer(yarn.read()):
-            fullname = m.group("name").replace("/", "-") + "-" + m.group("version")
-            fullname_noat = fullname.replace("@", "at-")
-            hashalgo = m.group("algo") + "sum"
-            hashsum = base64.b64decode(m.group("hash")).hex()
-
-            d.appendVar("SRC_URI", f' {m.group("url")};name={fullname_noat};downloadfilename={fullname}.tgz;subdir=offline_packages;unpack=0')
-            d.setVarFlag("SRC_URI", f'{fullname_noat}.{hashalgo}', hashsum)
-}
-
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
-DEPENDS = "yarn-native pkgconfig-native nodejs-native libsecret"
+DEPENDS = "pkgconfig-native libsecret theia-cli-native"
 RDEPENDS:${PN} = "nodejs bash libstdc++ glibc libsecret glib-2.0 libgcc"
 
 S = "${WORKDIR}/yarn"
 
+inherit yarn
+
+do_compile[vardeps] += " npm_config_arch CC_host CXX_host"
 do_compile() {
     echo 'yarn-offline-mirror "../offline_packages"' > .yarnrc
-    YARN="yarn --no-default-rc --use-yarnrc=.yarnrc --offline --pure-lockfile"
-    $YARN
-    $YARN theia build
-    $YARN --production
-    $YARN autoclean --init
+    ${YARN}
+    theia build
+    ${YARN} --production
+    ${YARN} autoclean --init
     echo *.ts >> .yarnclean
     echo *.ts.map >> .yarnclean
     echo *.spec.* >> .yarnclean
-    $YARN autoclean --force
+    ${YARN} autoclean --force
 }
 
 TARGET_LOCATION = "/opt/theia-app"
@@ -74,4 +59,4 @@ do_install() {
 # TODO: we are probably installing a lof of stuff we do not need, including static libs...
 # plugins contains binaries for from architectures
 # plugins have a lot of file-rdeps QA issues
-INSANE_SKIP:${PN} += "staticdev file-rdeps arch"
+INSANE_SKIP:${PN} += "staticdev file-rdeps arch already-stripped"
